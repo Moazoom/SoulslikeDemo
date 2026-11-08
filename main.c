@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "rlgl.h"
+#include "raymath.h"
 
 Camera3D camera;
 
@@ -29,10 +30,16 @@ int main(void) {
     camera.position = (Vector3){ 0.0f, 4.0f, 10.0f };
     camera.target = (Vector3){ 0.0f, 1.0f, 0.0f };
     camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
-    camera.fovy = 90.0f;
+    camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    Vector3 cubePosition = { 0.0f, 1.0f, 0.0f };
+    // store camera angle radians as a vector lol
+    Vector2 cameraAngle = { 0 };
+    float cameraDistance = 10.0f;
+    Vector3 cameraForwards = { 0 };
+    Vector3 cameraRight = { 0 };
+
+    float mouseSensitivity = 0.001f;
 
     // Lock and hide cursor for free-look camera
     DisableCursor();
@@ -40,27 +47,47 @@ int main(void) {
     // asset loading
     Model playerModel = LoadModel("resources/player.obj");
     Vector3 playerPosition = {0.0f, 0.0f, 0.0f};
+    Vector3 playerCenter = { 0 };
+    float playerSpeed = 0.05f;
 
     // gaem loop
     while (!WindowShouldClose()) {
-        // vamera time
-        UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+        // camera time
+        //UpdateCamera(&camera, CAMERA_FIRST_PERSON);
 
-        // 2. Begin drawing frame
+        // caputre mouse
+        cameraAngle.x -= GetMouseDelta().x * mouseSensitivity;
+        cameraAngle.y += GetMouseDelta().y * mouseSensitivity;
+
+        // figure out front and right relative to camera
+        cameraForwards = Vector3Normalize((Vector3){sinf(cameraAngle.x), 0.0f, cosf(cameraAngle.x)});
+        cameraRight = Vector3Normalize((Vector3){cosf(cameraAngle.x), 0.0f, -sinf(cameraAngle.x)});
+
+        // move player forward relative to camera
+        if (IsKeyDown(KEY_W)) playerPosition = Vector3Add(playerPosition, Vector3Scale(cameraForwards, playerSpeed));
+        if (IsKeyDown(KEY_A)) playerPosition = Vector3Add(playerPosition, Vector3Scale(cameraRight, playerSpeed));
+        if (IsKeyDown(KEY_S)) playerPosition = Vector3Subtract(playerPosition, Vector3Scale(cameraForwards, playerSpeed));
+        if (IsKeyDown(KEY_D)) playerPosition = Vector3Subtract(playerPosition, Vector3Scale(cameraRight, playerSpeed));
+
+        // update camera pos and angle
+        playerCenter = (Vector3){playerPosition.x, playerPosition.y + 3.0f, playerPosition.z};
+        camera.target = playerCenter;
+        camera.position.x = playerCenter.x - sinf(cameraAngle.x) * cosf(cameraAngle.y) * cameraDistance;
+        camera.position.y = playerCenter.y + sinf(cameraAngle.y) * cameraDistance;
+        camera.position.z = playerCenter.z - cosf(cameraAngle.x) * cosf(cameraAngle.y) * cameraDistance;
+
+        // drawing time
         BeginDrawing();
 
             ClearBackground(BLACK);
 
-            // Switch to 3D world space
+            // 3d stuff
             BeginMode3D(camera);
 
                 //skybox drawing behind deapth buffer
-                
                 rlDisableBackfaceCulling();
                 rlDisableDepthMask();
-
                 DrawModel(skybox, camera.position, 1.0f, WHITE);
-
                 rlEnableDepthMask();
                 rlEnableBackfaceCulling();
 
