@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "rlgl.h"
 #include "raymath.h"
+#include <stdlib.h>
 
 Camera3D camera;
 
@@ -10,20 +11,7 @@ int main(void) {
 
     // making window an stuff
     InitWindow(screenWidth, screenHeight, "heueuhuhuhhhhh");
-
-    //skybox
-    Image skyboxImage = LoadImage("resources/skybox/skybox_cross.png");
-    TextureCubemap skyboxTexture = LoadTextureCubemap(skyboxImage, CUBEMAP_LAYOUT_AUTO_DETECT);
-    UnloadImage(skyboxImage);
-    
-    Shader skyboxShader = LoadShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
-    
-    skyboxShader.locs[SHADER_LOC_MAP_CUBEMAP] = GetShaderLocation(skyboxShader, "environmentMap");
-    SetShaderValue(skyboxShader, GetShaderLocation(skyboxShader, "environmentMap"), (int[1]){ MATERIAL_MAP_CUBEMAP }, SHADER_UNIFORM_INT);
-    
-    Model skybox = LoadModelFromMesh(GenMeshCube(2.0f, 2.0f, 2.0f));
-    skybox.materials[0].shader = skyboxShader;
-    skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = skyboxTexture;
+    DisableCursor();
 
     // 3d camera
     Camera3D camera = { 0 };
@@ -41,14 +29,36 @@ int main(void) {
 
     float mouseSensitivity = 0.001f;
 
-    // Lock and hide cursor for free-look camera
-    DisableCursor();
+    //skybox
+    Image skyboxImage = LoadImage("resources/skybox/skybox_cross.png");
+    TextureCubemap skyboxTexture = LoadTextureCubemap(skyboxImage, CUBEMAP_LAYOUT_AUTO_DETECT);
+    UnloadImage(skyboxImage);
+    
+    Shader skyboxShader = LoadShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
+    
+    skyboxShader.locs[SHADER_LOC_MAP_CUBEMAP] = GetShaderLocation(skyboxShader, "environmentMap");
+    SetShaderValue(skyboxShader, GetShaderLocation(skyboxShader, "environmentMap"), (int[1]){ MATERIAL_MAP_CUBEMAP }, SHADER_UNIFORM_INT);
+    
+    Model skybox = LoadModelFromMesh(GenMeshCube(2.0f, 2.0f, 2.0f));
+    skybox.materials[0].shader = skyboxShader;
+    skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = skyboxTexture;
 
-    // asset loading
+    // player
     Model playerModel = LoadModel("resources/player.obj");
     Vector3 playerPosition = {0.0f, 0.0f, 0.0f};
     Vector3 playerCenter = { 0 };
     float playerSpeed = 0.05f;
+
+    // world stars
+    Texture2D star = LoadTexture("resources/star.png");
+    Vector3 starPositions[] = { 0 };
+    for (int i = 0; i < 10; i++){
+        Vector3 temp;
+        temp.x = (rand() % 20) - 10;
+        temp.y = (rand() % 10);
+        temp.z = (rand() % 20) - 10;
+        starPositions[i] = temp;
+    }
 
     // gaem loop
     while (!WindowShouldClose()) {
@@ -100,6 +110,11 @@ int main(void) {
                 DrawLine3D((Vector3){0}, (Vector3){3,0,0}, RED);
                 DrawLine3D((Vector3){0}, (Vector3){0,3,0}, GREEN);
                 DrawLine3D((Vector3){0}, (Vector3){0,0,3}, BLUE);
+
+                // draw stars
+                for (int i = 0; i < 10; i++){
+                    //DrawBillboard(camera, star, starPositions[i], 1.0f, WHITE);
+                }
 
             EndMode3D(); // Back to 2D UI space
 
