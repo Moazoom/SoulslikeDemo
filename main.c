@@ -51,12 +51,12 @@ int main(void) {
 
     // world stars
     Texture2D star = LoadTexture("resources/star.png");
-    Vector3 starPositions[] = { 0 };
-    for (int i = 0; i < 10; i++){
+    Vector3 starPositions[100] = { 0 };
+    for (int i = 0; i < 100; i++){
         Vector3 temp;
-        temp.x = (rand() % 20) - 10;
-        temp.y = (rand() % 10);
-        temp.z = (rand() % 20) - 10;
+        temp.x = (rand() % 200) - 100;
+        temp.y = (rand() % 20);
+        temp.z = (rand() % 200) - 100;
         starPositions[i] = temp;
     }
 
@@ -111,9 +111,9 @@ int main(void) {
                 DrawLine3D((Vector3){0}, (Vector3){0,3,0}, GREEN);
                 DrawLine3D((Vector3){0}, (Vector3){0,0,3}, BLUE);
 
-                // draw stars
-                for (int i = 0; i < 10; i++){
-                    //DrawBillboard(camera, star, starPositions[i], 1.0f, WHITE);
+                // drawing stars
+                for (int i = 0; i < 100; i++){
+                    DrawBillboard(camera, star, starPositions[i], 0.25f, WHITE);
                 }
 
             EndMode3D(); // Back to 2D UI space
