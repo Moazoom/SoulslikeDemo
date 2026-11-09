@@ -51,6 +51,8 @@ int main(void) {
 
     // world stars
     Texture2D star = LoadTexture("resources/star.png");
+    GenTextureMipmaps(&star);
+    SetTextureFilter(star, TEXTURE_FILTER_TRILINEAR);
     Vector3 starPositions[100] = { 0 };
     for (int i = 0; i < 100; i++){
         Vector3 temp;
